@@ -1,5 +1,18 @@
 #!/bin/sh
 
+PUID=${PUID:-1000}
+PGID=${PGID:-120}
+
+#groupmod -o -g "$PGID" abc
+#usermod -o -u "$PUID" abc
+
+usermod -g "$PGID" nginx
+usermod -u "$PUID" nginx
+
+find / -group "$PGID" -exec chgrp -h nginx {} \;
+find / -user "$PUID" -exec chown -h nginx {} \;
+
+
 [ -f /run-pre.sh ] && /run-pre.sh
 
 if [ -d /usr/html ]; then
@@ -12,7 +25,7 @@ else
 fi
 
 if [ "$PS_INSTALL_AUTO" = "1" ]; then
-  wget "https://github.com/PrestaShop/PrestaShop/releases/download/1.7.6.9/prestashop_1.7.6.9.zip" -O /tmp/prestashop.zip
+  wget "https://github.com/PrestaShop/PrestaShop/releases/download/1.7.7.2/prestashop_1.7.7.2.zip" -O /tmp/prestashop.zip
   unzip -n -q /tmp/prestashop.zip -d /tmp/prestashop/
   rm -rf /tmp/prestashop.zip
   unzip -n -q /tmp/prestashop/prestashop.zip -d /usr/html/
@@ -72,6 +85,7 @@ echo "[i] Fixing permissions & ownership..."
 
 find /usr/html/ -type f -exec chmod 644 {} \; && find /usr/html/ -type d -exec chmod 755 {} \;
 chown -R nginx:nginx /usr/html
+chmod -R 775 /usr/html
 
 echo "[i] Starting Prestashop..."
 
